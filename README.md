@@ -1,6 +1,6 @@
 # Seiran Kernel - vili
 
-Automated kernel builder for **Xiaomi Mi 11 Ultra (vili)** — SM8350 / Snapdragon 888, Linux 5.4 (LineageOS).
+Automated kernel builder for **Xiaomi Mi 11T Pro (vili)** — SM8350 / Snapdragon 888, Linux 5.4 (LineageOS).
 
 > [!WARNING]
 > Personal project. Flash at your own risk.
