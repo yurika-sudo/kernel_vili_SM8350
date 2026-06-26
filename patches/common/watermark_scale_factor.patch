@@ -5,4 +5,4 @@
  int watermark_boost_factor __read_mostly = 15000;
  #endif
 -int watermark_scale_factor = 10;
-+int watermark_scale_factor = 30;
++int watermark_scale_factor = 45;
