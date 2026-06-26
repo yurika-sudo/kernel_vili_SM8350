@@ -102,7 +102,7 @@ elif [ "$MODE" = "check" ]; then
 
   MSG="<b>🔍 Source Update Check</b>%0A%0A"
   MSG="${MSG}${STATUS_LINE}%0A%0A"
-  MSG="${MSG}<b>Vili 5.15:</b>   <code>${CHECK_MOTO_SUB:-?}</code>%0A"
+  MSG="${MSG}<b>Vili 5.4:</b>    <code>${CHECK_VILI_SUB:-?}</code>%0A"
   MSG="${MSG}<b>KSU-Next:</b>    <code>${CHECK_KSUN_TAG:-?}</code>%0A"
   MSG="${MSG}<b>SukiSU-Ultra:</b> <code>${CHECK_SUKI_TAG:-?}</code>%0A"
   MSG="${MSG}<b>SUSFS:</b>       <code>${DISPLAY_SUSFS_TAG}</code>%0A"
