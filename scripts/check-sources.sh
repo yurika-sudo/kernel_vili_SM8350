@@ -33,7 +33,7 @@ VILI_SUB=$(echo "$VILI_RAW" | awk -F' *= *' \
    /^SUBLEVEL /   {s=$2}
    END { if(v && p && s) print "v"v"."p"."s; else print "unknown" }')
 VILI_SUB="${VILI_SUB:-unknown}"
-echo "Vili SM8350: $XIAOMI_SUB"
+echo "Vili SM8350: $VILI_SUB"
 
 echo ""
 echo "=== Comparing against source-pins.json ==="
