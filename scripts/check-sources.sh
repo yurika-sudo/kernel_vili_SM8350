@@ -32,7 +32,7 @@ VILI_SUB=$(echo "$VILI_RAW" | awk -F' *= *' \
    /^PATCHLEVEL / {p=$2}
    /^SUBLEVEL /   {s=$2}
    END { if(v && p && s) print "v"v"."p"."s; else print "unknown" }')
-VILI_SUB="${XIAOMI_SUB:-unknown}"
+VILI_SUB="${VILI_SUB:-unknown}"
 echo "Vili SM8350: $XIAOMI_SUB"
 
 echo ""
@@ -44,7 +44,7 @@ PIN_SUKI=$(_pin "suki_tag")
 PIN_SUSFS=$(_pin "susfs_tag")
 
 UPDATES=()
-[ "$VILI_SUB"   != "$PIN_VILI"   ] && UPDATES+=("Vili: ${PIN_XIAOMI} → ${VILI_SUB}")
+[ "$VILI_SUB"   != "$PIN_VILI"   ] && UPDATES+=("Vili: ${PIN_VILI} → ${VILI_SUB}")
 [ "$KSUN_TAG"   != "$PIN_KSUN"   ] && UPDATES+=("KSU-Next: ${PIN_KSUN} → ${KSUN_TAG}")
 [ "$SUKI_TAG"   != "$PIN_SUKI"   ] && UPDATES+=("SukiSU: ${PIN_SUKI} → ${SUKI_TAG}")
 [ "$SUSFS_TAG"  != "$PIN_SUSFS"  ] && UPDATES+=("SUSFS: ${PIN_SUSFS} → ${SUSFS_TAG}")
