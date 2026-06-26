@@ -1,0 +1,20 @@
+name: setup-ksu
+description: integrate KSU variant + SUSFS into kernel source
+
+inputs:
+  ksu_type:
+    required: true
+  kernel_dir:
+    required: true
+  work_dir:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        KSU_TYPE:   ${{ inputs.ksu_type }}
+        KERNEL_DIR: ${{ inputs.kernel_dir }}
+        WORK_DIR:   ${{ inputs.work_dir }}
+      run: bash ${{ github.workspace }}/scripts/setup-ksu.sh
