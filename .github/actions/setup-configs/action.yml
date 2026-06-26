@@ -1,0 +1,23 @@
+name: setup-configs
+description: append kernel configs — delegates to scripts/setup-configs.sh
+
+inputs:
+  ksu_type:
+    required: true
+  source_type:
+    required: true
+  defconfig:
+    required: true
+  kernel_dir:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        KSU_TYPE:    ${{ inputs.ksu_type }}
+        SOURCE_TYPE: ${{ inputs.source_type }}
+        DEFCONFIG:   ${{ inputs.defconfig }}
+        KERNEL_DIR:  ${{ inputs.kernel_dir }}
+      run: bash ${{ github.workspace }}/scripts/setup-configs.sh
