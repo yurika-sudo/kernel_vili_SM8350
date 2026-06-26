@@ -1,8 +1,21 @@
-# kernel_vili_SM8350
-Kernel Builder
+# Seiran Kernel - vili
 
-kernel resources 
-https://github.com/Santhanabalan/android_kernel_xiaomi_sm8350.git
+Automated kernel builder for **Xiaomi Mi 11 Ultra (vili)** — SM8350 / Snapdragon 888, Linux 5.4 (LineageOS).
 
-susfs patches reference 
-https://github.com/JackA1ltman/NonGKI_Kernel_Build_2nd.git
+> [!WARNING]
+> Personal project. Flash at your own risk.
+
+## Quick Start
+
+1. Download ZIP from [Releases](../../releases)
+2. Flash via OrangeFox / TWRP
+3. Reboot
+
+> Using Magisk? Re-patch boot image after flashing.
+
+## Docs
+
+- [Variants & Features](docs/variants.md)
+- [Installation](docs/installation.md)
+- [About](docs/about.md)
+- [Credits](docs/credits.md)
