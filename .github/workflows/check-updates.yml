@@ -1,0 +1,55 @@
+name: "🔍 Check Source Updates"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'   # every Monday at 02:00 UTC
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    name: "🔍 Check upstream versions"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: "🔍 Fetch and compare upstream versions"
+        id: versions
+        run: bash scripts/check-sources.sh
+
+      - name: "📌 Update source-pins.json"
+        if: env.HAS_UPDATE == 'true'
+        run: |
+          jq -n \
+            --arg vili "$CHECK_VILI_SUB" \
+            --arg ksun   "$CHECK_KSUN_TAG" \
+            --arg suki   "$CHECK_SUKI_TAG" \
+            --arg susfs  "$CHECK_SUSFS_TAG" \
+            '{
+              xiaomi_sublevel: $xiaomi,
+              ksun_tag:        $ksun,
+              suki_tag:        $suki,
+              susfs_tag:       $susfs
+            }' > sources/source-pins.json
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sources/source-pins.json
+          git commit -m "chore: update source-pins.json [skip ci]"
+          git push
+
+      - name: "📣 Telegram report"
+        if: always()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_URL: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: bash scripts/notify.sh check
