@@ -34,7 +34,7 @@ jobs:
             --arg suki   "$CHECK_SUKI_TAG" \
             --arg susfs  "$CHECK_SUSFS_TAG" \
             '{
-              xiaomi_sublevel: $xiaomi,
+              vili_sublevel: $vili,
               ksun_tag:        $ksun,
               suki_tag:        $suki,
               susfs_tag:       $susfs
