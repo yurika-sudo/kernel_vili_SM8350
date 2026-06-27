@@ -33,5 +33,5 @@ kABI fix applied for GKI < 6.12 to prevent vendor module crashes on boot.
 | Config base | `vendor/lahaina-qgki_defconfig` |
 | Platform fragment | `vendor/lahaina_GKI.config` (if present) |
 | Device fragment | `vendor/ext_config/vili.config` (if present) |
-| Toolchain | Clang r563880c |
+| Toolchain | Clang r522817 |
 | LTO | Thin |
