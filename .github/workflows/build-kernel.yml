@@ -12,6 +12,7 @@ on:
       clo_fragment:  { type: string, required: false }
       build_type:    { type: string, required: true }   # stable | testing
       with_droidspaces: { type: string, required: false, default: 'true' }
+      with_susfs:       { type: string, required: false, default: 'false' }
 
 env:
   OUT_DIR: "out"
@@ -120,6 +121,7 @@ jobs:
           ksu_type:   ${{ inputs.ksu_type }}
           kernel_dir: ${{ env.KERNEL_SRC }}
           work_dir:   ${{ env.WORK_DIR }}
+          with_susfs: ${{ inputs.with_susfs }}
 
       - name: "🐳 Droidspaces"
         if: inputs.with_droidspaces == 'true'
