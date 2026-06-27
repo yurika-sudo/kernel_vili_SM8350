@@ -88,6 +88,13 @@ if [ "$KSU_TYPE" = "ksun" ]; then
   _inject_susfs_init "KernelSU-Next/kernel/ksu.c"
   _link_ksu_driver "KernelSU-Next"
 
+  # __p4d_to_phys missing on ARM64 4-level pgtable kernels
+  PATCH_MEM="KernelSU-Next/kernel/hook/arm64/patch_memory.c"
+  if [ -f "$PATCH_MEM" ] && ! grep -q "__p4d_to_phys" "$PATCH_MEM"; then
+    sed -i '/^#include "asm-generic\/fixmap.h"/a \\n#ifndef __p4d_to_phys\n#define __p4d_to_phys(p4d)\t(p4d_val(p4d) \& PHYS_MASK \& PAGE_MASK)\n#endif' "$PATCH_MEM"
+    echo "[OK] __p4d_to_phys compat injected"
+  fi
+
 # SukiSU-Ultra
 elif [ "$KSU_TYPE" = "suki" ]; then
   rm -rf ./KernelSU ./drivers/kernelsu
@@ -110,6 +117,13 @@ elif [ "$KSU_TYPE" = "suki" ]; then
   _apply_susfs_nongki
   _inject_susfs_init "KernelSU/kernel/ksu.c"
   _link_ksu_driver "KernelSU"
+
+  # __p4d_to_phys missing on ARM64 4-level pgtable kernels
+  PATCH_MEM="KernelSU/kernel/hook/arm64/patch_memory.c"
+  if [ -f "$PATCH_MEM" ] && ! grep -q "__p4d_to_phys" "$PATCH_MEM"; then
+    sed -i '/^#include "asm-generic\/fixmap.h"/a \\n#ifndef __p4d_to_phys\n#define __p4d_to_phys(p4d)\t(p4d_val(p4d) \& PHYS_MASK \& PAGE_MASK)\n#endif' "$PATCH_MEM"
+    echo "[OK] __p4d_to_phys compat injected"
+  fi
 
 fi
 
