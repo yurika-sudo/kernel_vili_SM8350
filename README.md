@@ -1,4 +1,4 @@
-# Seiran Kernel - vili
+# Seiran Kernel
 
 Automated kernel builder for **Xiaomi Mi 11T Pro (vili)** — SM8350 / Snapdragon 888, Linux 5.4 (LineageOS).
 
