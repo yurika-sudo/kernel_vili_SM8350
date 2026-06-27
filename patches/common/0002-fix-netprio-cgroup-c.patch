@@ -1,22 +1,38 @@
 --- a/net/core/netprio_cgroup.c
 +++ b/net/core/netprio_cgroup.c
-@@ -93,7 +93,7 @@ static int read_priomap(struct seq_file *sf, void *v)
- 	rcu_read_lock();
- 	css_for_each_descendant_pre(css, &root->css) {
--		int id = css->cgroup->id;
-+		int id = cgroup_id(css->cgroup);
- 
- @@ -113,7 +113,7 @@ static int write_priomap(struct kernfs_open_file *of,
- 	rcu_read_lock();
- 	css = task_css(current, net_prio_cgrp_id);
+@@ -93,7 +93,7 @@
+ static u32 netprio_prio(struct cgroup_subsys_state *css, struct net_device *dev)
+ {
+ 	struct netprio_map *map = rcu_dereference_rtnl(dev->priomap);
 -	int id = css->cgroup->id;
 +	int id = cgroup_id(css->cgroup);
- 	rcu_read_unlock();
  
- @@ -177,7 +177,7 @@ static u64 read_prioidx(struct cgroup_subsys_state *css, struct cftype *cft)
+ 	if (map && id < map->priomap_len)
+ 		return map->priomap[id];
+@@ -113,7 +113,7 @@
+ 			    struct net_device *dev, u32 prio)
+ {
+ 	struct netprio_map *map;
+-	int id = css->cgroup->id;
++	int id = cgroup_id(css->cgroup);
+ 	int ret;
+ 
+ 	/* avoid extending priomap for zero writes */
+@@ -177,7 +177,7 @@
+ 
+ static u64 read_prioidx(struct cgroup_subsys_state *css, struct cftype *cft)
+ {
 -	return css->cgroup->id;
 +	return cgroup_id(css->cgroup);
+ }
  
- @@ -239,7 +239,7 @@ static int netprio_cgroup_show(struct seq_file *m, void *arg)
+ static int read_priomap(struct seq_file *sf, void *v)
+@@ -239,7 +239,7 @@
+ 	cgroup_sk_alloc_disable();
+ 
+ 	cgroup_taskset_for_each(p, css, tset) {
 -		void *v = (void *)(unsigned long)css->cgroup->id;
 +		void *v = (void *)(unsigned long)cgroup_id(css->cgroup);
+ 
+ 		task_lock(p);
+ 		iterate_fd(p->files, 0, update_netprio, v);
