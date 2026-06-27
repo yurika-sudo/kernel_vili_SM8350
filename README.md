@@ -16,6 +16,7 @@ Automated kernel builder for **Xiaomi Mi 11T Pro (vili)** — SM8350 / Snapdrago
 ## Docs
 
 - [Variants & Features](docs/variants.md)
+- [Setup / CI](docs/setup.md)
 - [Installation](docs/installation.md)
 - [About](docs/about.md)
 - [Credits](docs/credits.md)
