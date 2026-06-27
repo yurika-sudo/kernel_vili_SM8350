@@ -8,13 +8,17 @@ inputs:
     required: true
   work_dir:
     required: true
+  with_susfs:
+    required: false
+    default: 'false'
 
 runs:
   using: composite
   steps:
     - shell: bash
       env:
-        KSU_TYPE:   ${{ inputs.ksu_type }}
-        KERNEL_DIR: ${{ inputs.kernel_dir }}
-        WORK_DIR:   ${{ inputs.work_dir }}
+        KSU_TYPE:    ${{ inputs.ksu_type }}
+        KERNEL_DIR:  ${{ inputs.kernel_dir }}
+        WORK_DIR:    ${{ inputs.work_dir }}
+        WITH_SUSFS:  ${{ inputs.with_susfs }}
       run: bash ${{ github.workspace }}/scripts/setup-ksu.sh
