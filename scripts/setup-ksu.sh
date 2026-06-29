@@ -67,18 +67,11 @@ _apply_susfs_nongki() {
 # KernelSU-Next
 if [ "$KSU_TYPE" = "ksun" ]; then
   rm -rf ./KernelSU ./drivers/kernelsu ./KernelSU-Next
-
-  if [ "$WITH_SUSFS" = "true" ]; then
-    # dev-susfs: SUSFS built-in to driver
-    KSUN_BRANCH="dev-susfs"
-  else
-    # dev: no SUSFS, baseline build
-    KSUN_BRANCH="dev"
-  fi
-
-  curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/${KSUN_BRANCH}/kernel/setup.sh" \
-    | bash -s main
+  curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" \
+    | bash -s legacy
   [ -d "KernelSU-Next" ] || { echo "[ERROR] KernelSU-Next not found"; exit 1; }
+  # seccomp_cache.o uses SECCOMP_ARCH_NATIVE_NR (5.10+), absent in 5.4
+  find KernelSU-Next/kernel/ -name 'Kbuild' -exec sed -i '/seccomp_cache\.o/d' {} +
 
   cd KernelSU-Next
   git fetch --tags 2>/dev/null || true
@@ -92,7 +85,10 @@ if [ "$KSU_TYPE" = "ksun" ]; then
 
   if [ "$WITH_SUSFS" = "true" ]; then
     _apply_susfs_nongki
-    _inject_susfs_init "KernelSU-Next/kernel/ksu.c"
+    # next branch uses core/init.c; try both, guard handles missing file
+    for _INIT_C in "KernelSU-Next/kernel/core/init.c" "KernelSU-Next/kernel/ksu.c"; do
+      _inject_susfs_init "$_INIT_C"
+    done
   fi
   _link_ksu_driver "KernelSU-Next"
 
