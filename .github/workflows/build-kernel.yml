@@ -11,8 +11,6 @@ on:
       defconfig:     { type: string, required: true }
       clo_fragment:  { type: string, required: false }
       build_type:    { type: string, required: true }   # stable | testing
-      with_droidspaces: { type: string, required: false, default: 'true' }
-      with_susfs:       { type: string, required: false, default: 'false' }
 
 env:
   OUT_DIR: "out"
@@ -60,9 +58,6 @@ jobs:
         with:
           path: ${{ env.KERNEL_SRC }}
           key: vili-source-${{ steps.vili-pin.outputs.hash }}
-
-      - name: "🔧 Fix source warnings"
-        run: bash scripts/fix-source-warnings.sh "${{ env.KERNEL_SRC }}"
 
       - name: "⚡ Configure ccache"
         if: inputs.build_type == 'stable'
@@ -124,7 +119,7 @@ jobs:
           with_susfs: ${{ inputs.with_susfs }}
 
       - name: "🐳 Droidspaces"
-        if: inputs.with_droidspaces == 'true'
+        if: inputs.ksu_type != 'none'
         working-directory: ${{ env.KERNEL_SRC }}
         run: |
           bash ${{ github.workspace }}/scripts/droidspaces.sh \
