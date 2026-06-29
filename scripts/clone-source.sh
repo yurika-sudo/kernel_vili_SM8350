@@ -11,7 +11,7 @@ mkdir -p "$KERNEL_SRC"
 case "$SOURCE_TYPE" in
 
   vili)
-    VILI_REPO="https://github.com/Spanish-or-Vanish/kernel_xiaomi_sm8350"
+    VILI_REPO="https://github.com/LineageOS/android_kernel_xiaomi_sm8350"
     VILI_BRANCH="lineage-23.2"
     if [ "${VILI_CACHE_HIT}" = "true" ] && [ -d "$KERNEL_SRC/.git" ]; then
       echo "[Vili] Cache hit — fetching delta only..."
