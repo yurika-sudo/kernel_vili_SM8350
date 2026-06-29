@@ -36,7 +36,7 @@ MAKE_FLAGS=(
   CROSS_COMPILE_ARM32=arm-linux-gnueabi-
   KBUILD_BUILD_USER="$KBUILD_BUILD_USER"
   KBUILD_BUILD_HOST="$KBUILD_BUILD_HOST"
-  KCFLAGS="-pipe -fno-strict-aliasing -Wno-error"
+  KCFLAGS="-pipe -fno-strict-aliasing -Wno-error -Wno-unknown-warning-option -Wno-array-bounds -Wno-stringop-overflow -Wno-mismatched-function-types"
   LLVM_PARALLEL_LINK_JOBS=2
 )
 
@@ -51,6 +51,7 @@ make "${MAKE_FLAGS[@]}" "$DEFCONFIG"
 
 echo "[${SOURCE_TYPE^^}] Switching to ThinLTO..."
 ./scripts/config --file "${OUT_DIR}/dist/.config" \
+  --disable LTO_NONE \
   --disable LTO_CLANG_FULL \
   --enable  LTO_CLANG_THIN
 make "${MAKE_FLAGS[@]}" olddefconfig
@@ -94,9 +95,8 @@ if $_FRAG_MERGED; then
     --set-str ZRAM_DEF_COMP "lz4"
 # Re-enforce SM8350 built-in symbols — lahaina_GKI.config may flip these to =m
   ./scripts/config --file "${OUT_DIR}/dist/.config" \
-    -e DEBUG_FS \
     -e QCOM_MINIDUMP \
-    -e MSM_QTEE_SHMBRIDGE \
+    -e QTEE_SHM_BRIDGE \
     -e QCOM_RIMPS
   make "${MAKE_FLAGS[@]}" olddefconfig
 fi
@@ -104,7 +104,7 @@ fi
 echo "[${SOURCE_TYPE^^}] Building Image..."
 if ! make "${MAKE_FLAGS[@]}" Image 2>&1 | tee "$LOG"; then
   echo "[FAIL] ${SOURCE_TYPE^^} build failed:"
-  tail -60 "$LOG"
+  tail -100 "$LOG"
   exit 1
 fi
 
