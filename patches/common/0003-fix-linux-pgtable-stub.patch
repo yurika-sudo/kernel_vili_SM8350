@@ -1,4 +1,0 @@
---- /dev/null
-+++ b/include/linux/pgtable.h
-@@ -0,0 +1 @@
-+#include <asm/pgtable.h>
