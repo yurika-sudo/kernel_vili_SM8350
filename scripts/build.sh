@@ -92,6 +92,12 @@ if $_FRAG_MERGED; then
     -d ZRAM_DEF_COMP_LZORLE -d ZRAM_DEF_COMP_ZSTD \
     -e ZRAM_DEF_COMP_LZ4    -d ZRAM_DEF_COMP_LZO \
     --set-str ZRAM_DEF_COMP "lz4"
+# Re-enforce SM8350 built-in symbols — lahaina_GKI.config may flip these to =m
+  ./scripts/config --file "${OUT_DIR}/dist/.config" \
+    -e DEBUG_FS \
+    -e QCOM_MINIDUMP \
+    -e MSM_QTEE_SHMBRIDGE \
+    -e QCOM_RIMPS
   make "${MAKE_FLAGS[@]}" olddefconfig
 fi
 
