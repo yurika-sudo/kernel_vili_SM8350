@@ -66,5 +66,6 @@ elif [ "$KSU_TYPE" = "suki" ]; then
   cd ..
   
   _link_ksu_driver "KernelSU"
+fi
 
 echo "[OK] KSU setup complete: $KSU_TYPE"
