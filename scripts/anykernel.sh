@@ -30,9 +30,9 @@ PATCH_VBMETA_FLAG=auto;
 
 # Detect available images
 HAS_KSU=0; HAS_SUKI=0; HAS_NOKSU=0;
-[ -f "$AKHOME/Image.xiaomi.ksu" ]   && HAS_KSU=1;
-[ -f "$AKHOME/Image.xiaomi.suki" ]  && HAS_SUKI=1;
-[ -f "$AKHOME/Image.xiaomi.noksu" ] && HAS_NOKSU=1;
+[ -f "$AKHOME/Image.vili.ksu" ]   && HAS_KSU=1;
+[ -f "$AKHOME/Image.vili.suki" ]  && HAS_SUKI=1;
+[ -f "$AKHOME/Image.vili.noksu" ] && HAS_NOKSU=1;
 TOTAL=$((HAS_KSU + HAS_SUKI + HAS_NOKSU));
 
 SELECTED_IMAGE="";
@@ -72,9 +72,9 @@ if [ "$TOTAL" -gt 1 ]; then
   [ "$HAS_SUKI"  = "1" ] && { I=$((I+1)); [ "$OPTION" = "$I" ] && { SELECTED_IMAGE="Image.xiaomi.suki";  ui_print "  >> SukiSU Ultra + SUSFS"; }; }
 
 # Single image: auto-detect
-elif [ "$HAS_NOKSU" = "1" ]; then SELECTED_IMAGE="Image.xiaomi.noksu"; ui_print "  >> NoKSU (auto)";
-elif [ "$HAS_KSU"   = "1" ]; then SELECTED_IMAGE="Image.xiaomi.ksu";   ui_print "  >> KSU-Next (auto)";
-elif [ "$HAS_SUKI"  = "1" ]; then SELECTED_IMAGE="Image.xiaomi.suki";  ui_print "  >> SukiSU (auto)";
+elif [ "$HAS_NOKSU" = "1" ]; then SELECTED_IMAGE="Image.vili.noksu"; ui_print "  >> NoKSU (auto)";
+elif [ "$HAS_KSU"   = "1" ]; then SELECTED_IMAGE="Image.vili.ksu";   ui_print "  >> KSU-Next (auto)";
+elif [ "$HAS_SUKI"  = "1" ]; then SELECTED_IMAGE="Image.vili.suki";  ui_print "  >> SukiSU (auto)";
 elif [ -f "$AKHOME/Image" ]; then
   ui_print "  Single image found, flashing...";
 else
@@ -85,7 +85,7 @@ fi
 # Swap selected to Image
 if [ -n "$SELECTED_IMAGE" ]; then
   mv -f "$AKHOME/$SELECTED_IMAGE" "$AKHOME/Image";
-  rm -f "$AKHOME/Image.xiaomi.ksu" "$AKHOME/Image.xiaomi.suki" "$AKHOME/Image.xiaomi.noksu";
+  rm -f "$AKHOME/Image.vili.ksu" "$AKHOME/Image.vili.suki" "$AKHOME/Image.vili.noksu";
 fi
 
 [ -f "$AKHOME/Image" ] || { ui_print "ERROR: Image prep failed!"; exit 1; }
