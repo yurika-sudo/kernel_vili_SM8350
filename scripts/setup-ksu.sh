@@ -54,7 +54,7 @@ elif [ "$KSU_TYPE" = "suki" ]; then
   [ -d "KernelSU" ] || { echo "[ERROR] KernelSU dir not found"; exit 1; }
 
   cd KernelSU
-  sed -i 's|<linux/pgtable.h>|<asm/pgtable.h>|g' drivers/kernelsu/feature/sucompat.c || true
+  sed -i 's|<linux/pgtable.h>|<asm/pgtable.h>|g' kernel/feature/sucompat.c || true
   git fetch --tags 2>/dev/null || true
   SUKI_TAG=$(git describe --tags --abbrev=0 2>/dev/null || \
     curl -sf "https://api.github.com/repos/SukiSU-Ultra/SukiSU-Ultra/releases/latest" \
