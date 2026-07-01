@@ -95,7 +95,9 @@ if $_FRAG_MERGED; then
     -d ZRAM_DEF_COMP_LZORLE -d ZRAM_DEF_COMP_ZSTD \
     -e ZRAM_DEF_COMP_LZ4    -d ZRAM_DEF_COMP_LZO \
     --set-str ZRAM_DEF_COMP "lz4"
-
+  ./scripts/config --file "${OUT_DIR}/dist/.config" \
+    -e MI_BOARD_INFO \
+    -e MSM_BOOT_STATS
   # Promote platform drivers from =m to =y so built-in code can resolve their symbols.
   # lahaina_GKI.config downgrades critical QCOM drivers (RPMH, SCM, minidump, QTEE, etc.)
   # to =m for GKI module builds — we need them built-in for a traditional image.
