@@ -3,7 +3,6 @@ name: "🔨 Build Kernels — AIO"
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
-
 on:
   schedule:
     - cron: '0 0 */5 * *'   # every 5 days — keeps GHA cache alive (evicts at 7d)
@@ -19,6 +18,14 @@ on:
         type: choice
         options: [stable, testing]
         default: stable
+      variants:
+        description: "Variants to build (comma-separated: ksun,suki,noksu)"
+        type: string
+        default: "ksun,suki,noksu"
+      clean_build:
+        description: "Skip source cache (force fresh clone)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -30,57 +37,80 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       start_time: ${{ steps.ts.outputs.start_time }}
+      run_ksun:   ${{ steps.filter.outputs.run_ksun }}
+      run_suki:   ${{ steps.filter.outputs.run_suki }}
+      run_noksu:  ${{ steps.filter.outputs.run_noksu }}
     steps:
       - id: ts
         run: echo "start_time=$(date +%s)" >> $GITHUB_OUTPUT
+      - id: filter
+        run: |
+          V="${{ inputs.variants || 'ksun,suki,noksu' }}"
+          echo "run_ksun=$([[ $V == *ksun*  ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "run_suki=$([[ $V == *suki*  ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "run_noksu=$([[ $V == *noksu* ]] && echo true || echo false)" >> $GITHUB_OUTPUT
 
-  build:
-    name: "🔨 ${{ matrix.variant.name }}"
+  build-ksun:
+    name: "🔨 Vili-Ksun"
     needs: [setup]
-    strategy:
-      fail-fast: false
-      matrix:
-        variant:
-          - name:      "Vili-Ksun"
-            source:    "vili"
-            ksu:       "ksun"
-            prefix:    "Vili_Ksun"
-            artifact:  "vili-ksun"
-            defconfig: "vendor/lahaina-qgki_defconfig"
-            clo_fragment: "vendor/lahaina_GKI.config"
-
-          - name:      "Vili-SukiSU"
-            source:    "vili"
-            ksu:       "suki"
-            prefix:    "Vili_SukiSU"
-            artifact:  "vili-suki"
-            defconfig: "vendor/lahaina-qgki_defconfig"
-            clo_fragment: "vendor/lahaina_GKI.config"
-
-          - name:      "Vili-NoKSU"
-            source:    "vili"
-            ksu:       "none"
-            prefix:    "Vili_NoKSU"
-            artifact:  "vili-noksu"
-            defconfig: "vendor/lahaina-qgki_defconfig"
-            clo_fragment: "vendor/lahaina_GKI.config"
-
+    if: needs.setup.outputs.run_ksun == 'true'
     uses: ./.github/workflows/build-kernel.yml
     with:
-      variant_name:  ${{ matrix.variant.name }}
-      source_type:   ${{ matrix.variant.source }}
-      ksu_type:      ${{ matrix.variant.ksu }}
-      zip_prefix:    ${{ matrix.variant.prefix }}
-      artifact_name: ${{ matrix.variant.artifact }}
-      defconfig:     ${{ matrix.variant.defconfig }}
-      clo_fragment:  ${{ matrix.variant.clo_fragment || '' }}
+      variant_name:  "Vili-Ksun"
+      source_type:   "vili"
+      ksu_type:      "ksun"
+      zip_prefix:    "Vili_Ksun"
+      artifact_name: "vili-ksun"
+      defconfig:     "vendor/lahaina-qgki_defconfig"
+      clo_fragment:  "vendor/lahaina_GKI.config"
       build_type:    ${{ inputs.build_type || 'stable' }}
+      clean_build:   ${{ inputs.clean_build == true }}
+    secrets: inherit
+
+  build-suki:
+    name: "🔨 Vili-SukiSU"
+    needs: [setup]
+    if: needs.setup.outputs.run_suki == 'true'
+    uses: ./.github/workflows/build-kernel.yml
+    with:
+      variant_name:  "Vili-SukiSU"
+      source_type:   "vili"
+      ksu_type:      "suki"
+      zip_prefix:    "Vili_SukiSU"
+      artifact_name: "vili-suki"
+      defconfig:     "vendor/lahaina-qgki_defconfig"
+      clo_fragment:  "vendor/lahaina_GKI.config"
+      build_type:    ${{ inputs.build_type || 'stable' }}
+      clean_build:   ${{ inputs.clean_build == true }}
+    secrets: inherit
+
+  build-noksu:
+    name: "🔨 Vili-NoKSU"
+    needs: [setup]
+    if: needs.setup.outputs.run_noksu == 'true'
+    uses: ./.github/workflows/build-kernel.yml
+    with:
+      variant_name:  "Vili-NoKSU"
+      source_type:   "vili"
+      ksu_type:      "none"
+      zip_prefix:    "Vili_NoKSU"
+      artifact_name: "vili-noksu"
+      defconfig:     "vendor/lahaina-qgki_defconfig"
+      clo_fragment:  "vendor/lahaina_GKI.config"
+      build_type:    ${{ inputs.build_type || 'stable' }}
+      clean_build:   ${{ inputs.clean_build == true }}
     secrets: inherit
 
   release:
     name: "📦 Package & Release"
-    needs: [setup, build]
-    if: success() && github.event_name != 'schedule'
+    needs: [setup, build-ksun, build-suki, build-noksu]
+    if: |
+      always() &&
+      github.event_name != 'schedule' &&
+      (needs.build-ksun.result == 'success' || needs.build-ksun.result == 'skipped') &&
+      (needs.build-suki.result == 'success' || needs.build-suki.result == 'skipped') &&
+      (needs.build-noksu.result == 'success' || needs.build-noksu.result == 'skipped') &&
+      (needs.build-ksun.result == 'success' || needs.build-suki.result == 'success' || needs.build-noksu.result == 'success')
     uses: ./.github/workflows/release.yml
     with:
       zip_mode:   ${{ inputs.zip_mode || 'per-variant' }}
@@ -92,8 +122,11 @@ jobs:
   notify-failure:
     name: "❌ Notify Failure"
     runs-on: ubuntu-latest
-    needs: [build]
-    if: always() && needs.build.result == 'cancelled' && github.event_name != 'schedule'
+    needs: [build-ksun, build-suki, build-noksu]
+    if: |
+      always() &&
+      (needs.build-ksun.result == 'cancelled' || needs.build-suki.result == 'cancelled' || needs.build-noksu.result == 'cancelled') &&
+      github.event_name != 'schedule'
     steps:
       - uses: actions/checkout@v4.2.2
         with:
@@ -104,5 +137,5 @@ jobs:
           TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
           RUN_URL:    "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           RUN_NUMBER: "${{ github.run_number }}"
-          BUILD_STATUS: "${{ needs.build.result }}"
+          BUILD_STATUS: "cancelled"
         run: bash scripts/notify.sh failure
