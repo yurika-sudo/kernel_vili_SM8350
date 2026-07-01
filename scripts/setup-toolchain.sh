@@ -4,7 +4,7 @@ set -e
 
 : "${WORK_DIR:=$GITHUB_WORKSPACE}"
 
-CLANG_VER="ZyC-Clang-23.0.0git"
+CLANG_VER="clang-r522817"
 CLANG_URL="https://github.com/yurika-sudo/clang-repo/releases/download/clang-1/${CLANG_VER}.tar.gz"
 CLANG_DIR="${WORK_DIR}/prebuilts/clang/host/linux-x86/clang-${CLANG_VER}"
 
