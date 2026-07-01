@@ -58,9 +58,12 @@ make "${MAKE_FLAGS[@]}" olddefconfig
 
 _FRAG_MERGED=false
 
-# Merge platform fragment (lahaina GKI base)
+# Merge platform fragments — order matters:
+#   lahaina_GKI.config  : platform-wide GKI additions (mostly =m drivers)
+#   lahaina_QGKI.config : QGKI-specific platform additions
+# CLO_FRAGMENT is passed from workflow (vendor/lahaina_GKI.config)
 if [ -n "${CLO_FRAGMENT:-}" ] && [ -f "arch/arm64/configs/${CLO_FRAGMENT}" ]; then
-  echo "[${SOURCE_TYPE^^}] Merging platform fragment: $CLO_FRAGMENT"
+  echo "[${SOURCE_TYPE^^}] Merging platform GKI fragment: $CLO_FRAGMENT"
   KCONFIG_CONFIG="${OUT_DIR}/dist/.config" \
     scripts/kconfig/merge_config.sh -m \
     "${OUT_DIR}/dist/.config" \
@@ -69,31 +72,29 @@ if [ -n "${CLO_FRAGMENT:-}" ] && [ -f "arch/arm64/configs/${CLO_FRAGMENT}" ]; th
   _FRAG_MERGED=true
 fi
 
-# Merge device-specific fragments for vili.
-# These live in vendor/ext_config/ of the xiaomi SM8350 source tree.
-# fragment names may vary — verify against your kernel source tree
+# Merge device-specific fragments (LOS SM8350 lineage-23.2 tree)
 for _EXTRA in \
-  "arch/arm64/configs/vendor/ext_config/vili.config" \
-  "arch/arm64/configs/vendor/xiaomi/lahaina.config"; do
+  "arch/arm64/configs/vendor/lahaina_QGKI.config" \
+  "arch/arm64/configs/vendor/vili_QGKI.config"; do
   if [ -f "$_EXTRA" ]; then
-    echo "[${SOURCE_TYPE^^}] Merging extra fragment: $_EXTRA"
+    echo "[${SOURCE_TYPE^^}] Merging fragment: $_EXTRA"
     KCONFIG_CONFIG="${OUT_DIR}/dist/.config" \
       scripts/kconfig/merge_config.sh -m \
       "${OUT_DIR}/dist/.config" "$_EXTRA"
     make "${MAKE_FLAGS[@]}" olddefconfig
     _FRAG_MERGED=true
   else
-    echo "[${SOURCE_TYPE^^}] Extra fragment not found, skipping: $_EXTRA"
+    echo "[${SOURCE_TYPE^^}] Fragment not found, skipping: $_EXTRA"
   fi
 done
 
-# Force LZ4 ZRAM after all fragment merges (fragments may override the default)
+# Force LZ4 ZRAM after all fragment merges (fragments may revert the default)
 if $_FRAG_MERGED; then
   ./scripts/config --file "${OUT_DIR}/dist/.config" \
     -d ZRAM_DEF_COMP_LZORLE -d ZRAM_DEF_COMP_ZSTD \
     -e ZRAM_DEF_COMP_LZ4    -d ZRAM_DEF_COMP_LZO \
     --set-str ZRAM_DEF_COMP "lz4"
-  
+
   sed -i 's/=m/=y/g' "${OUT_DIR}/dist/.config"
   make "${MAKE_FLAGS[@]}" olddefconfig
 fi
