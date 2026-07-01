@@ -88,15 +88,24 @@ for _EXTRA in \
   fi
 done
 
-# Force LZ4 ZRAM after all fragment merges (fragments may revert the default).
-# Only touches the specific ZRAM symbols — no blanket =m→=y conversion,
-# which would cause duplicate symbol errors from competing vendor drivers
-# (e.g. st/fts and fts_spi/fts both built-in → ld.lld duplicate symbols).
+# Post-fragment fixups
 if $_FRAG_MERGED; then
+  # Force LZ4 ZRAM (fragments may revert it)
   ./scripts/config --file "${OUT_DIR}/dist/.config" \
     -d ZRAM_DEF_COMP_LZORLE -d ZRAM_DEF_COMP_ZSTD \
     -e ZRAM_DEF_COMP_LZ4    -d ZRAM_DEF_COMP_LZO \
     --set-str ZRAM_DEF_COMP "lz4"
+
+  # Promote platform drivers from =m to =y so built-in code can resolve their symbols.
+  # lahaina_GKI.config downgrades critical QCOM drivers (RPMH, SCM, minidump, QTEE, etc.)
+  # to =m for GKI module builds — we need them built-in for a traditional image.
+  #
+  # EXCLUDE CONFIG_TOUCHSCREEN_* from promotion: multiple FTS driver variants
+  # (drivers/input/touchscreen/st/ and fts_spi/) share exported symbols.
+  # Both becoming =y causes ld.lld duplicate symbol errors at link time.
+  # Touchscreen drivers are fine as modules — Android loads them from vendor partition.
+  sed -i '/^CONFIG_TOUCHSCREEN_/!s/=m/=y/g' "${OUT_DIR}/dist/.config"
+
   make "${MAKE_FLAGS[@]}" olddefconfig
 fi
 
