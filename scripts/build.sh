@@ -32,11 +32,13 @@ MAKE_FLAGS=(
   OBJCOPY=llvm-objcopy
   OBJDUMP=llvm-objdump
   STRIP=llvm-strip
+  OBJSIZE=llvm-size
+  READELF=llvm-readelf
   CROSS_COMPILE=aarch64-linux-gnu-
   CROSS_COMPILE_ARM32=arm-linux-gnueabi-
   KBUILD_BUILD_USER="$KBUILD_BUILD_USER"
   KBUILD_BUILD_HOST="$KBUILD_BUILD_HOST"
-  KCFLAGS="-pipe -fno-strict-aliasing -Wno-error -Wno-unknown-warning-option -Wno-array-bounds -Wno-stringop-overflow -Wno-mismatched-function-types"
+  KCFLAGS="-pipe -fno-strict-aliasing -fno-common -Wno-error -Wno-unknown-warning-option -Wno-array-bounds -Wno-stringop-overflow -Wno-mismatched-function-types -Wno-unused-variable -Wno-misleading-indentation -Wno-incompatible-function-pointer-types"
   LLVM_PARALLEL_LINK_JOBS=2
 )
 
@@ -51,9 +53,11 @@ make "${MAKE_FLAGS[@]}" "$DEFCONFIG"
 
 echo "[${SOURCE_TYPE^^}] Switching to ThinLTO..."
 ./scripts/config --file "${OUT_DIR}/dist/.config" \
-  --disable LTO_NONE \
-  --disable LTO_CLANG_FULL \
-  --enable  LTO_CLANG_THIN
+  -e LTO_CLANG \
+  -d LTO_NONE \
+  -e LTO_CLANG_THIN \
+  -d LTO_CLANG_FULL \
+  -e THINLTO
 make "${MAKE_FLAGS[@]}" olddefconfig
 
 _FRAG_MERGED=false
@@ -91,13 +95,20 @@ done
 # Post-fragment fixups
 if $_FRAG_MERGED; then
   # Force LZ4 ZRAM (fragments may revert it)
+  echo "[VILI] Re-enforcing ZRAM_DEF_COMP=lz4 after fragment merge"
   ./scripts/config --file "${OUT_DIR}/dist/.config" \
-    -d ZRAM_DEF_COMP_LZORLE -d ZRAM_DEF_COMP_ZSTD \
-    -e ZRAM_DEF_COMP_LZ4    -d ZRAM_DEF_COMP_LZO \
+    -d ZRAM_DEF_COMP_LZORLE \
+    -d ZRAM_DEF_COMP_ZSTD \
+    -e ZRAM_DEF_COMP_LZ4 \
+    -d ZRAM_DEF_COMP_LZO \
     --set-str ZRAM_DEF_COMP "lz4"
+    echo "[VILI] Re-enforcing TCP_CONG=westwood after fragment merge"
   ./scripts/config --file "${OUT_DIR}/dist/.config" \
-    -e MI_BOARD_INFO \
-    -e MSM_BOOT_STATS
+    -d TCP_CONG_BBR \
+    -e TCP_CONG_WESTWOOD \
+    --set-str DEFAULT_TCP_CONG "westwood" \
+    -d DEFAULT_BBR \
+    -e DEFAULT_WESTWOOD
   # Promote platform drivers from =m to =y so built-in code can resolve their symbols.
   # lahaina_GKI.config downgrades critical QCOM drivers (RPMH, SCM, minidump, QTEE, etc.)
   # to =m for GKI module builds — we need them built-in for a traditional image.
@@ -106,7 +117,7 @@ if $_FRAG_MERGED; then
   # (drivers/input/touchscreen/st/ and fts_spi/) share exported symbols.
   # Both becoming =y causes ld.lld duplicate symbol errors at link time.
   # Touchscreen drivers are fine as modules — Android loads them from vendor partition.
-  sed -i '/^CONFIG_TOUCHSCREEN_/!s/=m/=y/g' "${OUT_DIR}/dist/.config"
+  sed -E -i '/^(CONFIG_TOUCHSCREEN_|CONFIG_ICNSS|CONFIG_CNSS|CONFIG_QTI_BATTERY)/!s/=m/=y/g' "${OUT_DIR}/dist/.config"
 
   make "${MAKE_FLAGS[@]}" olddefconfig
 fi
@@ -118,8 +129,13 @@ if ! make "${MAKE_FLAGS[@]}" Image 2>&1 | tee "$LOG"; then
   exit 1
 fi
 
-cp "${OUT_DIR}/dist/arch/arm64/boot/Image" "${OUT_DIR}/dist/Image"
-echo "[${SOURCE_TYPE^^}] Image copied to ${OUT_DIR}/dist/Image"
+if [ -f "${OUT_DIR}/dist/arch/arm64/boot/Image" ]; then
+  cp "${OUT_DIR}/dist/arch/arm64/boot/Image" "${OUT_DIR}/dist/Image"
+  echo "[${SOURCE_TYPE^^}] Image copied to ${OUT_DIR}/dist/Image"
+else
+  echo "[FAIL] Image file not found in build directory!"
+  exit 1
+fi
 
 DURATION=$(( $(date +%s) - START ))
 echo "✅ Build done in $((DURATION/60))m $((DURATION%60))s"
