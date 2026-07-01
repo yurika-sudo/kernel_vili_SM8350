@@ -90,6 +90,7 @@ jobs:
         run: bash scripts/setup-toolchain.sh
 
       - name: "🩹 Apply patches"
+        if: inputs.ksu_type != 'none'
         env:
           SOURCE_TYPE: ${{ inputs.source_type }}
           KSU_TYPE:    ${{ inputs.ksu_type }}
