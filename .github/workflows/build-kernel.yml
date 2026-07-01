@@ -11,6 +11,7 @@ on:
       defconfig:     { type: string, required: true }
       clo_fragment:  { type: string, required: false }
       build_type:    { type: string, required: true }   # stable | testing
+      clean_build:   { type: boolean, required: false, default: false }
 
 env:
   OUT_DIR: "out"
@@ -40,6 +41,7 @@ jobs:
 
       - name: "📦 Restore Vili source cache"
         id: vili-src-cache
+        if: inputs.clean_build != true
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.KERNEL_SRC }}
