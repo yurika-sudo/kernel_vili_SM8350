@@ -59,7 +59,7 @@ make "${MAKE_FLAGS[@]}" olddefconfig
 _FRAG_MERGED=false
 
 # Merge platform fragments — order matters:
-#   lahaina_GKI.config  : platform-wide GKI additions (mostly =m drivers)
+#   lahaina_GKI.config  : platform-wide GKI additions (mostly =m vendor drivers)
 #   lahaina_QGKI.config : QGKI-specific platform additions
 # CLO_FRAGMENT is passed from workflow (vendor/lahaina_GKI.config)
 if [ -n "${CLO_FRAGMENT:-}" ] && [ -f "arch/arm64/configs/${CLO_FRAGMENT}" ]; then
@@ -88,14 +88,15 @@ for _EXTRA in \
   fi
 done
 
-# Force LZ4 ZRAM after all fragment merges (fragments may revert the default)
+# Force LZ4 ZRAM after all fragment merges (fragments may revert the default).
+# Only touches the specific ZRAM symbols — no blanket =m→=y conversion,
+# which would cause duplicate symbol errors from competing vendor drivers
+# (e.g. st/fts and fts_spi/fts both built-in → ld.lld duplicate symbols).
 if $_FRAG_MERGED; then
   ./scripts/config --file "${OUT_DIR}/dist/.config" \
     -d ZRAM_DEF_COMP_LZORLE -d ZRAM_DEF_COMP_ZSTD \
     -e ZRAM_DEF_COMP_LZ4    -d ZRAM_DEF_COMP_LZO \
     --set-str ZRAM_DEF_COMP "lz4"
-
-  sed -i 's/=m/=y/g' "${OUT_DIR}/dist/.config"
   make "${MAKE_FLAGS[@]}" olddefconfig
 fi
 
