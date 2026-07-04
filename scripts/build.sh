@@ -120,10 +120,11 @@ if $_FRAG_MERGED; then
   sed -E -i '/^(CONFIG_TOUCHSCREEN_|CONFIG_ICNSS|CONFIG_CNSS|CONFIG_QTI_BATTERY)/!s/=m/=y/g' "${OUT_DIR}/dist/.config"
     echo "[VILI] Re-enforcing POWER_SUPPLY,QTU,QPNP after sed config."
   ./scripts/config --file "${OUT_DIR}/dist/.config" \
-    -e POWER_SUPPLY \
     -e QTI_BATTERY_CHARGER \
     -e QPNP_QG \
-    -e QPNP_SMB5
+    -e QPNP_SMB5 \
+    -e MI_HARDWARE_ID \
+    -e DRM_MSM
   make "${MAKE_FLAGS[@]}" olddefconfig
 fi
 
