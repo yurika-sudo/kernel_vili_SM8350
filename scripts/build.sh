@@ -36,6 +36,7 @@ MAKE_FLAGS=(
   READELF=llvm-readelf
   CROSS_COMPILE=aarch64-linux-gnu-
   CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+  CONFIG_DISPLAY_BUILD=y
   KBUILD_BUILD_USER="$KBUILD_BUILD_USER"
   KBUILD_BUILD_HOST="$KBUILD_BUILD_HOST"
   KCFLAGS="-pipe -fno-strict-aliasing -fno-common -Wno-error -Wno-unknown-warning-option -Wno-array-bounds -Wno-stringop-overflow -Wno-mismatched-function-types -Wno-unused-variable -Wno-misleading-indentation -Wno-incompatible-function-pointer-types"
@@ -120,7 +121,7 @@ if $_FRAG_MERGED; then
   sed -E -i '/^(CONFIG_TOUCHSCREEN_|CONFIG_ICNSS|CONFIG_CNSS|CONFIG_QTI_BATTERY)/!s/=m/=y/g' "${OUT_DIR}/dist/.config"
     echo "[VILI] Dropping upstream drivers/gpu/drm/msm (dup of techpack/display + KGSL Adreno)"
   sed -i '/^obj-\$(CONFIG_DRM_MSM) += msm\/$/d' drivers/gpu/drm/Makefile
-    echo "[VILI] Re-enforcing POWER_SUPPLY,QTU,QPNP after sed config."
+    echo "[VILI] Re-enforcing QTI,QPNP,MI,DRM after sed config."
   ./scripts/config --file "${OUT_DIR}/dist/.config" \
     -e QTI_BATTERY_CHARGER \
     -e QPNP_QG \
