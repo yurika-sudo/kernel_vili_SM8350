@@ -27,7 +27,7 @@ if [ "$KSU_TYPE" = "ksun" ]; then
   rm -rf ./KernelSU ./drivers/kernelsu ./KernelSU-Next
   
   KSUN_BRANCH="${KSUN_BRANCH:-dev}"
-  curl -LSs ".../${KSUN_BRANCH}/kernel/setup.sh" | bash -s "$KSUN_BRANCH"
+  curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/${KSUN_BRANCH}/kernel/setup.sh" | bash -s "$KSUN_BRANCH"
   [ -d "KernelSU-Next" ] || { echo "[ERROR] KernelSU-Next not found"; exit 1; }
   # seccomp_cache.o uses SECCOMP_ARCH_NATIVE_NR (5.10+), absent in 5.4
   find KernelSU-Next/kernel/ -name 'Kbuild' -exec sed -i '/seccomp_cache\.o/d' {} +
@@ -49,7 +49,7 @@ elif [ "$KSU_TYPE" = "suki" ]; then
   rm -rf ./KernelSU ./drivers/kernelsu
 
   SUKI_ARG="${SUKI_ARG:-builtin}"
-  curl -LSs ".../main/kernel/setup.sh" | bash -s "$SUKI_ARG"
+  curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s "$SUKI_ARG"
   [ -d "KernelSU" ] || { echo "[ERROR] KernelSU dir not found"; exit 1; }
 
   cd KernelSU
