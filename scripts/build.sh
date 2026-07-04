@@ -12,6 +12,7 @@ set -e
 OUT_DIR="${WORK_DIR}/out"
 START=$(date +%s)
 
+export TARGET_PRODUCT=vili
 export KBUILD_BUILD_USER="${KBUILD_BUILD_USER:-superuseryu}"
 export KBUILD_BUILD_HOST="${KBUILD_BUILD_HOST:-github}"
 export PATH="${CLANG_DIR}/bin:$PATH"
@@ -80,7 +81,9 @@ fi
 # Merge device-specific fragments (LOS SM8350 lineage-23.2 tree)
 for _EXTRA in \
   "arch/arm64/configs/vendor/lahaina_QGKI.config" \
-  "arch/arm64/configs/vendor/vili_QGKI.config"; do
+  "arch/arm64/configs/vendor/vili_QGKI.config" \
+  "arch/arm64/configs/vendor/xiaomi_QGKI.config" \
+  "arch/arm64/configs/vendor/debugfs.config"; do
   if [ -f "$_EXTRA" ]; then
     echo "[${SOURCE_TYPE^^}] Merging fragment: $_EXTRA"
     KCONFIG_CONFIG="${OUT_DIR}/dist/.config" \
