@@ -31,6 +31,8 @@ if [ "$KSU_TYPE" = "ksun" ]; then
   [ -d "KernelSU-Next" ] || { echo "[ERROR] KernelSU-Next not found"; exit 1; }
   # seccomp_cache.o uses SECCOMP_ARCH_NATIVE_NR (5.10+), absent in 5.4
   find KernelSU-Next/kernel/ -name 'Kbuild' -exec sed -i '/seccomp_cache\.o/d' {} +
+  # pkg_observer.o uses newer fsnotify hook (.handle_inode_event), absent in 5.4
+  find KernelSU-Next/kernel/ -name 'Kbuild' -exec sed -i '/pkg_observer\.o/d' {} +
 
   cd KernelSU-Next
   git fetch --tags 2>/dev/null || true
@@ -40,7 +42,6 @@ if [ "$KSU_TYPE" = "ksun" ]; then
   _ksun_ver=$(grep -rh "^#define KSU_VERSION\b" kernel/ 2>/dev/null \
     | awk 'NR==1{print $NF}' | tr -d '[:space:]')
   echo "${_ksun_ver:-}" > "$WORK_DIR/ksun_version.txt"
-  find . -name sucompat.c -exec sed -i 's|<linux/pgtable.h>|<asm/pgtable.h>|g' {} +
   cd ..
 
   _link_ksu_driver "KernelSU-Next"
@@ -49,9 +50,11 @@ if [ "$KSU_TYPE" = "ksun" ]; then
 elif [ "$KSU_TYPE" = "suki" ]; then
   rm -rf ./KernelSU ./drivers/kernelsu
 
-  SUKI_ARG="${SUKI_ARG:-main}"
+  SUKI_ARG="${SUKI_ARG:-builtin}"
   curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s "$SUKI_ARG"
   [ -d "KernelSU" ] || { echo "[ERROR] KernelSU dir not found"; exit 1; }
+  # same seccomp_cache incompatibility as KernelSU-Next
+  find KernelSU/kernel/ -name 'Kbuild' -exec sed -i '/seccomp_cache\.o/d' {} +
 
   cd KernelSU
   sed -i 's|<linux/pgtable.h>|<asm/pgtable.h>|g' kernel/feature/sucompat.c || true
