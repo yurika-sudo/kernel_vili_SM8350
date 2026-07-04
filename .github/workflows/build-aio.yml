@@ -18,14 +18,6 @@ on:
         type: choice
         options: [stable, testing]
         default: stable
-      variants:
-        description: "Variants to build (comma-separated: ksun,suki,noksu)"
-        type: string
-        default: "ksun,suki,noksu"
-      clean_build:
-        description: "Skip source cache (force fresh clone)"
-        type: boolean
-        default: false
 
 permissions:
   contents: write
@@ -64,7 +56,6 @@ jobs:
       defconfig:     "vendor/lahaina-qgki_defconfig"
       clo_fragment:  "vendor/lahaina_GKI.config"
       build_type:    ${{ inputs.build_type || 'stable' }}
-      clean_build:   ${{ inputs.clean_build == true }}
     secrets: inherit
 
   build-suki:
@@ -81,7 +72,6 @@ jobs:
       defconfig:     "vendor/lahaina-qgki_defconfig"
       clo_fragment:  "vendor/lahaina_GKI.config"
       build_type:    ${{ inputs.build_type || 'stable' }}
-      clean_build:   ${{ inputs.clean_build == true }}
     secrets: inherit
 
   build-noksu:
@@ -98,7 +88,6 @@ jobs:
       defconfig:     "vendor/lahaina-qgki_defconfig"
       clo_fragment:  "vendor/lahaina_GKI.config"
       build_type:    ${{ inputs.build_type || 'stable' }}
-      clean_build:   ${{ inputs.clean_build == true }}
     secrets: inherit
 
   release:
