@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 # setup-configs.sh — inject kernel configs into defconfig
-# env: KSU_TYPE, SOURCE_TYPE, DEFCONFIG (full path), KERNEL_DIR
+# env: KSU_TYPE, SOURCE_TYPE, DEFCONFIG (full path), KERNEL_DIR, CLO_FRAGMENT (optional)
 set -e
 
 : "${KSU_TYPE:?}"
 : "${SOURCE_TYPE:?}"
 : "${DEFCONFIG:?}"
 : "${KERNEL_DIR:?}"
-
-[ "$KSU_TYPE" = "none" ] && { echo "[SKIP] NoKSU — config injections skipped (vanilla)"; exit 0; }
 
 CF="$DEFCONFIG"
 
@@ -18,17 +16,13 @@ sed -i 's/CONFIG_CMDLINE="/&slub_debug=- page_owner=off /' "$CF"
 
 # Strip symbols already in base defconfig to avoid "reassigning" warnings
 for SYM in PID_NS DEBUG_KINFO \
-           OVERLAY_FS NET_SCH_CODEL NET_SCH_FQ_CODEL UBSAN \
+           NET_SCH_CODEL NET_SCH_FQ_CODEL UBSAN \
            LRU_GEN LRU_GEN_ENABLED NET_SCH_FQ DEBUG_MEMORY_INIT PRINTK_CALLER \
-           KSU_SUSFS KSU_SUSFS_SUS_MAP KSU_SUSFS_SUS_PATH KSU_SUSFS_SUS_MOUNT \
-           KSU_SUSFS_SUS_KSTAT KSU_SUSFS_SPOOF_UNAME KSU_SUSFS_ENABLE_LOG \
-           KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG \
-           KSU_SUSFS_OPEN_REDIRECT KSU_SUSFS_SUS_SU \
            ZRAM_DEF_COMP_LZORLE ZRAM_DEF_COMP_ZSTD ZRAM_DEF_COMP_LZ4 ZRAM_DEF_COMP_LZO ZRAM_DEF_COMP; do
   sed -i "/^CONFIG_${SYM}[= ]/d; /^# CONFIG_${SYM} /d" "$CF"
 done
 
-# Common configs (all variants) — explicit injection beats vendor fragment lottery
+# Common configs (all variants)
 cat >> "$CF" << 'EOF'
 CONFIG_TCP_CONG_ADVANCED=y
 CONFIG_TCP_CONG_BBR=y
@@ -39,6 +33,9 @@ CONFIG_TCP_CONG_VENO=y
 CONFIG_TCP_CONG_BIC=n
 CONFIG_TCP_CONG_HTCP=n
 CONFIG_DEFAULT_WESTWOOD=y
+CONFIG_NET_SCH_FQ=y
+CONFIG_NET_SCH_CODEL=y
+CONFIG_NET_SCH_FQ_CODEL=y
 CONFIG_ZRAM_WRITEBACK=y
 # CONFIG_ZRAM_MEMORY_TRACKING is not set
 # CONFIG_ZRAM_DEF_COMP_LZORLE is not set
@@ -53,30 +50,36 @@ CONFIG_HZ_300=y
 CONFIG_HZ=300
 CONFIG_FRAME_WARN=0
 CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
-CONFIG_KPROBES=y
-CONFIG_KPROBE_EVENTS=y
 # CONFIG_SLUB_DEBUG_ON is not set
 # CONFIG_SLUB_STATS is not set
 # CONFIG_DEBUG_LIST is not set
+# CONFIG_DEBUG_KINFO is not set
 # CONFIG_DEBUG_MEMORY_INIT is not set
 # CONFIG_RCU_TRACE is not set
 # CONFIG_PRINTK_CALLER is not set
+# CONFIG_DEBUG_FS is not set
+# CONFIG_DEBUG_MISC is not set
 # CONFIG_UBSAN is not set
 # CONFIG_F2FS_IOSTAT is not set
+# CONFIG_NTSYNC is not set
 EOF
 
+# KSU-Next
 if [ "$KSU_TYPE" = "ksun" ]; then
   cat >> "$CF" << 'EOF'
 CONFIG_KSU=y
-CONFIG_KSU_KPROBES_HOOK=y
 CONFIG_BBG=y
 EOF
 
+# SukiSU
 elif [ "$KSU_TYPE" = "suki" ]; then
   cat >> "$CF" << 'EOF'
 CONFIG_KSU=y
 CONFIG_KPM=y
 EOF
+
+# NoKSU — no extras, common configs above apply
+# (only common configs above apply — nothing extra here)
 fi
 
-echo "[OK] setup-configs done (KSU_TYPE=$KSU_TYPE)"
+echo "[OK] Configs written for KSU_TYPE=$KSU_TYPE SOURCE_TYPE=$SOURCE_TYPE"
