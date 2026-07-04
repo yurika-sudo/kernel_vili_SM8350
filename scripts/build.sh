@@ -37,7 +37,6 @@ MAKE_FLAGS=(
   READELF=llvm-readelf
   CROSS_COMPILE=aarch64-linux-gnu-
   CROSS_COMPILE_ARM32=arm-linux-gnueabi-
-  CONFIG_DISPLAY_BUILD=y
   KBUILD_BUILD_USER="$KBUILD_BUILD_USER"
   KBUILD_BUILD_HOST="$KBUILD_BUILD_HOST"
   KCFLAGS="-pipe -fno-strict-aliasing -fno-common -Wno-error -Wno-unknown-warning-option -Wno-array-bounds -Wno-stringop-overflow -Wno-mismatched-function-types -Wno-unused-variable -Wno-misleading-indentation -Wno-incompatible-function-pointer-types"
@@ -64,10 +63,6 @@ make "${MAKE_FLAGS[@]}" olddefconfig
 
 _FRAG_MERGED=false
 
-# Merge platform fragments — order matters:
-#   lahaina_GKI.config  : platform-wide GKI additions (mostly =m vendor drivers)
-#   lahaina_QGKI.config : QGKI-specific platform additions
-# CLO_FRAGMENT is passed from workflow (vendor/lahaina_GKI.config)
 if [ -n "${CLO_FRAGMENT:-}" ] && [ -f "arch/arm64/configs/${CLO_FRAGMENT}" ]; then
   echo "[${SOURCE_TYPE^^}] Merging platform GKI fragment: $CLO_FRAGMENT"
   KCONFIG_CONFIG="${OUT_DIR}/dist/.config" \
@@ -80,10 +75,9 @@ fi
 
 # Merge device-specific fragments (LOS SM8350 lineage-23.2 tree)
 for _EXTRA in \
-  "arch/arm64/configs/vendor/lahaina_QGKI.config" \
-  "arch/arm64/configs/vendor/vili_QGKI.config" \
+  "arch/arm64/configs/vendor/lahaina-qgki_defconfig" \
   "arch/arm64/configs/vendor/xiaomi_QGKI.config" \
-  "arch/arm64/configs/vendor/debugfs.config"; do
+  "arch/arm64/configs/vendor/vili_QGKI.config"; do
   if [ -f "$_EXTRA" ]; then
     echo "[${SOURCE_TYPE^^}] Merging fragment: $_EXTRA"
     KCONFIG_CONFIG="${OUT_DIR}/dist/.config" \
@@ -113,26 +107,6 @@ if $_FRAG_MERGED; then
     --set-str DEFAULT_TCP_CONG "westwood" \
     -d DEFAULT_BBR \
     -e DEFAULT_WESTWOOD
-  # Promote platform drivers from =m to =y so built-in code can resolve their symbols.
-  # lahaina_GKI.config downgrades critical QCOM drivers (RPMH, SCM, minidump, QTEE, etc.)
-  # to =m for GKI module builds — we need them built-in for a traditional image.
-  #
-  # EXCLUDE CONFIG_TOUCHSCREEN_* from promotion: multiple FTS driver variants
-  # (drivers/input/touchscreen/st/ and fts_spi/) share exported symbols.
-  # Both becoming =y causes ld.lld duplicate symbol errors at link time.
-  # Touchscreen drivers are fine as modules — Android loads them from vendor partition.
-  sed -E -i '/^(CONFIG_TOUCHSCREEN_|CONFIG_ICNSS|CONFIG_CNSS|CONFIG_QTI_BATTERY)/!s/=m/=y/g' "${OUT_DIR}/dist/.config"
-    echo "[VILI] Dropping upstream drivers/gpu/drm/msm (dup of techpack/display + KGSL Adreno)"
-  sed -i '/^obj-\$(CONFIG_DRM_MSM) += msm\/$/d' drivers/gpu/drm/Makefile
-    echo "[VILI] Re-enforcing QTI,QPNP,MI,DRM after sed config."
-  ./scripts/config --file "${OUT_DIR}/dist/.config" \
-    -e QTI_BATTERY_CHARGER \
-    -e QPNP_QG \
-    -e QPNP_SMB5 \
-    -e MI_HARDWARE_ID \
-    -e DRM_MSM
-  # qcacld-3.0's own nl80211/ipa symbols collide with built-in ones if promoted to =y
-  ./scripts/config --file "${OUT_DIR}/dist/.config" -m CONFIG_QCA_CLD_WLAN
   make "${MAKE_FLAGS[@]}" olddefconfig
 fi
 
