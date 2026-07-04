@@ -36,6 +36,7 @@ if [ "$KSU_TYPE" = "ksun" ]; then
   find . -name sucompat.c -exec sed -i 's|<linux/pgtable.h>|<asm/pgtable.h>|g' {} +
 
   cd KernelSU-Next
+  sed -i 's|<linux/pgtable.h>|<asm/pgtable.h>|g' kernel/feature/sucompat.c || true
   git fetch --tags 2>/dev/null || true
   KSUN_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "unknown")
   echo "KSUN_TAG=$KSUN_TAG" >> "${GITHUB_ENV:-/dev/null}"
