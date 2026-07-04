@@ -20,10 +20,10 @@ apply_patch() {
   done < "$TMP"
   [ -n "$missing" ] && { echo "[SKIP] $NAME — missing:$missing"; rm -f "$TMP"; return 0; }
 
-  if ! patch -p1 --dry-run --forward --quiet --force < "$TMP" 2>/dev/null; then
+  if ! patch -p1 --dry-run --forward --force < "$TMP"; then
     # forward dry-run failed — check if it's because the patch is already
     # applied (reverse succeeds) vs a genuine conflict (reverse also fails)
-    if patch -p1 --dry-run --reverse --quiet --force < "$TMP" 2>/dev/null; then
+    if patch -p1 --dry-run --reverse --force < "$TMP"; then
       echo "[SKIP] $NAME — already applied"
     else
       echo "[FAIL] $NAME — context mismatch, needs manual review"
