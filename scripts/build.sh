@@ -121,7 +121,7 @@ if $_FRAG_MERGED; then
   # (drivers/input/touchscreen/st/ and fts_spi/) share exported symbols.
   # Both becoming =y causes ld.lld duplicate symbol errors at link time.
   # Touchscreen drivers are fine as modules — Android loads them from vendor partition.
-  sed -E -i '/^(CONFIG_TOUCHSCREEN_|CONFIG_ICNSS|CONFIG_CNSS|CONFIG_QTI_BATTERY)/!s/=m/=y/g' "${OUT_DIR}/dist/.config"
+  sed -E -i '/^(CONFIG_TOUCHSCREEN_|CONFIG_ICNSS|CONFIG_CNSS|CONFIG_QTI_BATTERY|CONFIG_IPA3|CONFIG_QCA_CLD_WLAN)/!s/=m/=y/g' "${OUT_DIR}/dist/.config"
     echo "[VILI] Dropping upstream drivers/gpu/drm/msm (dup of techpack/display + KGSL Adreno)"
   sed -i '/^obj-\$(CONFIG_DRM_MSM) += msm\/$/d' drivers/gpu/drm/Makefile
     echo "[VILI] Re-enforcing QTI,QPNP,MI,DRM after sed config."
