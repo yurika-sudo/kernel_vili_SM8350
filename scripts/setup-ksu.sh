@@ -40,6 +40,7 @@ if [ "$KSU_TYPE" = "ksun" ]; then
   _ksun_ver=$(grep -rh "^#define KSU_VERSION\b" kernel/ 2>/dev/null \
     | awk 'NR==1{print $NF}' | tr -d '[:space:]')
   echo "${_ksun_ver:-}" > "$WORK_DIR/ksun_version.txt"
+  find . -name sucompat.c -exec sed -i 's|<linux/pgtable.h>|<asm/pgtable.h>|g' {} +
   cd ..
 
   _link_ksu_driver "KernelSU-Next"
@@ -48,7 +49,7 @@ if [ "$KSU_TYPE" = "ksun" ]; then
 elif [ "$KSU_TYPE" = "suki" ]; then
   rm -rf ./KernelSU ./drivers/kernelsu
 
-  SUKI_ARG="${SUKI_ARG:-builtin}"
+  SUKI_ARG="${SUKI_ARG:-main}"
   curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s "$SUKI_ARG"
   [ -d "KernelSU" ] || { echo "[ERROR] KernelSU dir not found"; exit 1; }
 
