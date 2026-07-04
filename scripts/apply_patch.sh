@@ -33,7 +33,7 @@ apply_patch() {
     return 0
   fi
 
-  if patch -p1 --forward < "$TMP"; then
+  if patch -p1 --forward --batch < "$TMP"; then
     echo "[OK]  $NAME"
   else
     [ "$STRICT" = "1" ] && { echo "[FAIL] $NAME"; rm -f "$TMP"; return 1; }
