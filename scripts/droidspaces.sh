@@ -11,6 +11,13 @@ apply_patch \
   "droidspaces_sysvipc_kabi" \
   "1"
 
+# Mandatory for kernel 5.10 and below (vili is 5.4) — without this, enabling
+# CONFIG_POSIX_MQUEUE causes an immediate bootloop per Droidspaces docs.
+apply_patch \
+  "https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/refs/heads/main/Documentation/resources/kernel-patches/GKI/below-kernel-6.12/002.5.10_or_lower_use_android_abi_padding_for_posix_mqueue.patch" \
+  "droidspaces_posix_mqueue_kabi" \
+  "1"
+
 cat >> "$DEFCONFIG" << 'EOF'
 CONFIG_SYSVIPC=y
 CONFIG_POSIX_MQUEUE=y
