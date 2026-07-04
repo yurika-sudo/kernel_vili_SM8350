@@ -33,6 +33,7 @@ if [ "$KSU_TYPE" = "ksun" ]; then
   find KernelSU-Next/kernel/ -name 'Kbuild' -exec sed -i '/seccomp_cache\.o/d' {} +
   # pkg_observer.o uses newer fsnotify hook (.handle_inode_event), absent in 5.4
   find KernelSU-Next/kernel/ -name 'Kbuild' -exec sed -i '/pkg_observer\.o/d' {} +
+  find . -name sucompat.c -exec sed -i 's|<linux/pgtable.h>|<asm/pgtable.h>|g' {} +
 
   cd KernelSU-Next
   git fetch --tags 2>/dev/null || true
