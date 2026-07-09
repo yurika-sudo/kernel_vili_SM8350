@@ -26,8 +26,8 @@ _link_ksu_driver() {
 if [ "$KSU_TYPE" = "ksun" ]; then
   rm -rf ./KernelSU ./drivers/kernelsu ./KernelSU-Next
   
-  KSUN_BRANCH="${KSUN_BRANCH:-dev}"
-  curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/${KSUN_BRANCH}/kernel/setup.sh" | bash -s "$KSUN_BRANCH"
+  KSUN_BRANCH="${KSUN_BRANCH:-legacy-susfs}"
+  curl -LSs "https://raw.githubusercontent.com/omrxdev/KernelSU-Next/${KSUN_BRANCH}/kernel/setup.sh" | bash -s "$KSUN_BRANCH"
   [ -d "KernelSU-Next" ] || { echo "[ERROR] KernelSU-Next not found"; exit 1; }
   # seccomp_cache.o uses SECCOMP_ARCH_NATIVE_NR (5.10+), absent in 5.4
   find KernelSU-Next/kernel/ -name 'Kbuild' -exec sed -i '/seccomp_cache\.o/d' {} +
